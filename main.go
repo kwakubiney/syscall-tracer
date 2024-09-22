@@ -17,7 +17,7 @@ import (
 
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target amd64 tracer tracer.c
 
-func main()  {
+func main() {
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer cancel()
@@ -28,7 +28,7 @@ func main()  {
 	}
 
 	var objs tracerObjects
-	if err := loadTracerObjects(&objs, nil); err != nil{
+	if err := loadTracerObjects(&objs, nil); err != nil {
 		log.Print("Error loading eBPF objects:", err)
 	}
 
@@ -43,15 +43,14 @@ func main()  {
 	//seems the kernel sends tp events to this file so we can just read the file as we move along.
 	const traceEventFileName = "/sys/kernel/debug/tracing/trace_pipe"
 	traceEventFile, err := os.Open(traceEventFileName)
-	if err != nil{
+	if err != nil {
 		log.Fatalf("error occurred whilst opening file %s: %s\n", traceEventFileName, err)
 	}
 
 	var fileScanner = bufio.NewScanner(traceEventFile)
 
-	
-	go func(){
-		for fileScanner.Scan(){
+	go func() {
+		for fileScanner.Scan() {
 			fmt.Println(fileScanner.Text())
 		}
 		if err := fileScanner.Err(); err != nil {
