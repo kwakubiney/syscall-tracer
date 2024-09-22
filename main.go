@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"errors"
+	"flag"
 	"fmt"
 	"io/fs"
 	"os"
@@ -19,6 +20,11 @@ import (
 
 func main() {
 
+
+	syscall := flag.String("syscall", "exec", "Specify the syscall to trace: 'open', 'close', or 'exec'")
+	flag.Parse()
+
+
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer cancel()
 
@@ -34,9 +40,26 @@ func main() {
 
 	defer objs.Close()
 
-	tp, err := link.Tracepoint("syscalls", "sys_enter_execve", objs.tracerPrograms.PrintOnExecveCall, nil)
-	if err != nil {
+	var tp link.Link
+	var err error
+	switch *syscall{
+	case "exec":
+		tp, err = link.Tracepoint("syscalls", "sys_enter_execve", objs.tracerPrograms.PrintOnExecveCall, nil)
+		if err != nil {
+		log.Fatalf("opening tracepoint for exec: %s", err)
+		}
+	case "open":
+		tp, err = link.Tracepoint("syscalls", "sys_enter_open", objs.tracerPrograms.PrintOnFileOpenCall, nil)
+		if err != nil {
 		log.Fatalf("opening tracepoint: %s", err)
+		}
+	case "close":
+		tp, err = link.Tracepoint("syscalls", "sys_enter_close", objs.tracerPrograms.PrintOnFileCloseCall, nil)
+		if err != nil {
+		log.Fatalf("opening tracepoint: %s", err)
+		}
+	default:
+		log.Fatalf("unsupported syscall: %s", *syscall)
 	}
 
 	//loop over /sys/kernel/debug/tracing/trace_pipe

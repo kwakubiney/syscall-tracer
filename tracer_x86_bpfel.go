@@ -53,7 +53,9 @@ type tracerSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type tracerProgramSpecs struct {
-	PrintOnExecveCall *ebpf.ProgramSpec `ebpf:"print_on_execve_call"`
+	PrintOnExecveCall    *ebpf.ProgramSpec `ebpf:"print_on_execve_call"`
+	PrintOnFileCloseCall *ebpf.ProgramSpec `ebpf:"print_on_file_close_call"`
+	PrintOnFileOpenCall  *ebpf.ProgramSpec `ebpf:"print_on_file_open_call"`
 }
 
 // tracerMapSpecs contains maps before they are loaded into the kernel.
@@ -91,12 +93,16 @@ func (m *tracerMaps) Close() error {
 //
 // It can be passed to loadTracerObjects or ebpf.CollectionSpec.LoadAndAssign.
 type tracerPrograms struct {
-	PrintOnExecveCall *ebpf.Program `ebpf:"print_on_execve_call"`
+	PrintOnExecveCall    *ebpf.Program `ebpf:"print_on_execve_call"`
+	PrintOnFileCloseCall *ebpf.Program `ebpf:"print_on_file_close_call"`
+	PrintOnFileOpenCall  *ebpf.Program `ebpf:"print_on_file_open_call"`
 }
 
 func (p *tracerPrograms) Close() error {
 	return _TracerClose(
 		p.PrintOnExecveCall,
+		p.PrintOnFileCloseCall,
+		p.PrintOnFileOpenCall,
 	)
 }
 
